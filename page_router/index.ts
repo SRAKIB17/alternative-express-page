@@ -6,6 +6,16 @@ import { Request, Response, ServerOptionsProps, Url, deleteCookie, getParams, pa
 import { getFileContentType, isModuleFile, moduleType } from "./filetype";
 import { middleware } from "./middleware";
 
+interface Handlers {
+    GET?: (req: Request, res: Response) => void;
+    POST?: (req: Request, res: Response) => void;
+    PUT?: (req: Request, res: Response) => void;
+    DELETE?: (req: Request, res: Response) => void;
+    PATCH?: (req: Request, res: Response) => void;
+    middleware?: (req: Request, res: Response, next: () => void) => void;
+}
+
+
 // Create a server
 export class CreateServer extends middleware {
     server: https.Server | http.Server;
@@ -28,9 +38,6 @@ export class CreateServer extends middleware {
             const handleRequest: any = this.#handleRequest.bind(this);
             this.server = createServer(httpOptions, handleRequest);
         }
-    }
-    async #response(req: Request, res: Response) {
-
     }
 
     async #responseHandler(req: Request, res: Response, args: ((req: Request, res: Response) => void)[] | ((req: Request, res: Response) => void), option?: any) {
@@ -175,98 +182,160 @@ export class CreateServer extends middleware {
         }
     }
 
-    #handleRequest(req: Request, res: Response) {
-        const url = new Url(req.url || "").urlParse;
-        const pathname = (url?.path && url?.path?.lastIndexOf('/') > 0 && url?.path?.lastIndexOf('/') == url?.path?.length - 1) ? url?.path?.slice(0, -1) : url?.path;
-        const filePath = path.resolve(`${this.#root}${pathname}`);
-        // const filePath = `./routes${pathname}`;
-        return fs.stat(filePath, (err, stats) => {
-            if (err) {
-                return this.#notFoundHandler(req, res);
-            }
-            if (stats.isDirectory()) {
-                // const pathname = (filePath && filePath?.lastIndexOf('/') > 0 && filePath?.lastIndexOf('/') == filePath?.length - 1) ? filePath?.slice(0, -1) : filePath;
-                // Route points to a directory, try to find an index.js file
-                const indexPath = path.resolve(`${filePath}/index.${this.#file_type}`);
-                return this.#checkPath(indexPath, req, res);
-            }
-            else {
-                this.#checkPath(filePath, req, res);
-            }
-        });
-    }
-    #checkPath(pathname: string, req: Request, res: Response) {
-        // Route points to a file, try to execute it
-        const module = isModuleFile(pathname);
-        return fs.access(pathname, fs.constants.F_OK, (err) => {
-            if (err) {
-                return this.#notFoundHandler(req, res);
-            }
-            if (module) {
-                return this.#moduleHandler(pathname, req, res);
-            }
-            else {
-                if (moduleType.includes(getFileContentType(pathname)?.type)) {
-                    return this.#notFoundHandler(req, res);
+    async #handleFileName(filePath: string, req: Request, res: Response): Promise<void> {
+        // if () {
+        //     console.log(this.#accessFile(`${filePath}`, req, res, (req, res) => {
+        //         console.log(filePath.match(/.ts/gi))
+        //     }))
+        //     // return this.#handleFileName(`${filePath}.${this.#file_type}.${this.#file_type}`, req, res);
+        //     this.#notFoundHandler(req, res);
+        // }
+        // else {
+        // const filePath = filePath?.endsWith(`.${this.#file_type}`) ? `${filePath}.ts` : filePath;
+        // const filePath = filePath.replace(new RegExp(`\\.${this.#file_type}(?!.*\\.${this.#file_type})`), '');
+
+        return new Promise<void>((resolve, reject) => {
+            fs.stat(filePath, (err, stats) => {
+                if (err) {
+                    if (filePath.endsWith(`.${this.#file_type}`)) {
+                        this.#notFoundHandler(req, res);
+                    }
+                    else {
+                        const indexPath = path.resolve(`${filePath}.${this.#file_type}`);
+                        this.#handleFileName(indexPath, req, res)
+                            .then(() => resolve())
+                            .catch(reject);
+                    }
                 }
                 else {
-                    return this.#responseHandler(req, res, (req, res) => {
-                        res.sendFile(pathname);
-                    });
+                    if (stats.isDirectory()) {
+                        const indexPath = path.resolve(`${filePath}/index.${this.#file_type}`);
+                        this.#checkPath(indexPath, req, res);
+                    }
+                    else {
+                        this.#checkPath(filePath, req, res);
+                    }
                 }
-            }
+            });
+        });
+        // }
+    }
+
+    #handleRequest(req: Request, res: Response) {
+        const url = new Url(req.url || "").urlParse;
+        // const pathname = (url?.path && url?.path?.lastIndexOf('/') > 0 && url?.path?.lastIndexOf('/') == url?.path?.length - 1) ? url?.path?.slice(0, -1) : url?.path;
+        const filePath = path.resolve(`${this.#root}${decodeURIComponent(url?.path || "")}`);
+        const pathname = filePath.replace(new RegExp(`\\.${this.#file_type}(?!.*\\.${this.#file_type})`), '');
+
+        // Constructing the regular expression pattern dynamically
+        const regexPattern = new RegExp(`\\${this.#file_type.replace('.', '\\.')}$`);
+        // const filePath = `./routes${pathname}`;
+        const newPath = filePath.replace(regexPattern, ''); // Remove the last occurrence of .ts
+        console.log(newPath, 'fsdfdfxxcxccccccc')
+        return this.#handleFileName(pathname, req, res);
+    }
+    async #checkPath(pathname: string, req: Request, res: Response): Promise<void> {
+        // Route points to a file, try to execute it
+        const module = isModuleFile(pathname);
+        return new Promise<void>((resolve, reject) => {
+            fs.access(pathname, fs.constants.F_OK, (err) => {
+                if (err) {
+                    this.#notFoundHandler(req, res);
+                } else {
+                    if (module) {
+                        this.#moduleHandler(pathname, req, res).then(() => resolve()).catch(reject);
+                    }
+                    else {
+                        const fileContentType = getFileContentType(pathname)?.type;
+                        if (moduleType.includes(fileContentType)) {
+                            return this.#notFoundHandler(req, res);
+                        }
+                        else {
+                            this.#responseHandler(req, res, (req, res) => {
+                                return res.sendFile(pathname);
+                            });
+                        }
+                    }
+                }
+            });
         });
     }
-    async  #moduleHandler(pathname: string, req: Request, res: Response) {
-        const { GET, POST, PUT, DELETE, PATCH, middleware } = require(pathname);
-        switch (req.method) {
-            case 'GET':
-                return this.#responseHandler(req, res, [middleware, GET]);
-            case 'POST':
-                return this.#responseHandler(req, res, [middleware, POST]);
-            case 'DELETE':
-                return this.#responseHandler(req, res, [middleware, DELETE]);
-            case 'PUT':
-                return this.#responseHandler(req, res, [middleware, PUT]);
-            case 'PATCH':
-                return this.#responseHandler(req, res, [middleware, PATCH]);
-            default:
-                break;
-        }
+    async #moduleHandler(pathname: string, req: Request, res: Response): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            fs.stat(pathname, (err) => {
+                if (err) {
+                    reject(err);
+                }
+                else {
+                    const { GET, POST, PUT, DELETE, PATCH, middleware } = require(pathname);
+                    switch (req.method) {
+                        case 'GET':
+                            this.#responseHandler(req, res, [middleware, GET])
+                                .then(() => resolve())
+                                .catch(reject);
+                            break;
+                        case 'POST':
+                            this.#responseHandler(req, res, [middleware, POST])
+                                .then(() => resolve())
+                                .catch(reject);
+                            break;
+                        case 'DELETE':
+                            this.#responseHandler(req, res, [middleware, DELETE])
+                                .then(() => resolve())
+                                .catch(reject);
+                            break;
+                        case 'PUT':
+                            this.#responseHandler(req, res, [middleware, PUT])
+                                .then(() => resolve())
+                                .catch(reject);
+                            break;
+                        case 'PATCH':
+                            this.#responseHandler(req, res, [middleware, PATCH])
+                                .then(() => resolve())
+                                .catch(reject);
+                            break;
+                        default:
+                            resolve(); // Resolve the promise for other HTTP methods
+                            break;
+                    }
+                }
+            });
+        });
     }
-    #accessFile(filename: string, req: Request, res: Response, callback: (req: Request, res: Response) => void) {
+    #accessFile(filename: string, req: Request, res: Response, callback: (req: Request, res: Response) => void): void {
         const pathname = path.resolve(this.#root, filename);
-        return fs.access(pathname, fs.constants.F_OK, (err) => {
+        fs.access(pathname, fs.constants.F_OK, (err) => {
             if (err) {
-                callback(req, res)
-            }
-            else {
-                return this.#responseHandler(req, res, (req, res) => {
+                callback(req, res);
+            } else {
+                this.#responseHandler(req, res, (req, res) => {
                     res.sendFile(pathname);
                 });
             }
         });
     }
-    #notFoundHandler(req: Request, res: Response) {
+
+    #notFoundHandler(req: Request, res: Response): void {
         try {
             const notfound = require(path.resolve(this.#root, `404.${this.#file_type}`))?.default;
             if (typeof notfound == 'function') {
-                this.#responseHandler(req, res, notfound)
+                this.#responseHandler(req, res, notfound);
             }
             else {
                 this.#notfound(req, res);
             }
-        }
-        catch {
+        } catch (error) {
             this.#notfound(req, res);
         }
     }
-    #notfound(req: Request, res: Response) {
+
+    #notfound(req: Request, res: Response): void {
         this.#responseHandler(req, res, (req, res) => {
             const { path } = new Url(req?.url || "")?.urlParse;
-            res.text(`${req?.method}: '${path}' could not find\n`)
-        })
+            res.text(`${req?.method}: '${path}' could not find\n`);
+        });
     }
+
     listen(port: number, callback?: () => void) {
         this.server.listen(port, () => {
             console.log(`Server running at ${this.#option.enableSsl ? "https" : "http"}://localhost:${port}/`);
