@@ -63,6 +63,7 @@ export interface CookieOptions {
 
 export interface Response extends ServerResponse, ResponseMethod {
     status: (status: number) => ResponseMethod;
+    next: () => void
     deleteCookie: (cookieName: string, options?: CookieOptions) => void
     setCookie: (cookieName: string, cookieValue: string, options?: CookieOptions) => void
 }
