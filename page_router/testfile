@@ -1,0 +1,61 @@
+import { readdirSync, statSync } from "fs";
+import path from "path";
+class files {
+    getFiles(dirPath: string) {
+        const filesInFolder = readdirSync(dirPath, { withFileTypes: true });
+        return filesInFolder;
+    }
+    prepare(dirPath: string) {
+        for (const file of readdirSync(dirPath).filter(f => f.endsWith('.js') && f !== 'index.js')) {
+            // api.suite(file, () => require(`./${file}`).default(api));
+            console.log(file)
+        }
+    }
+    * walkSync(dir: string): Generator<string> {
+        const files = readdirSync(dir, { withFileTypes: true });
+        for (const file of files) {
+            if (file.isDirectory()) {
+                yield* this.walkSync(path.join(dir, file.name));
+            } else {
+                yield path.join(dir, file.name);
+            }
+        }
+    }
+    findPackagesUnderPath(path: string) {
+        const searchPaths = [path];
+        const packages: string[] = [];
+        // while (searchPaths.length > 0) {
+        //     const search = searchPaths.shift()!;
+        //     if (await util.promisify(fs.exists)(`${search}/package.json`)) {
+        //         packages.push(search);
+        //     } else {
+        //         searchPaths.push(
+        //             ...fs.readdirSync(search, { withFileTypes: true })
+        //                 .filter((t) => t.isDirectory())
+        //                 .map((d) => `${search}/${d.name}`));
+        //     }
+        // }
+        return packages;
+    }
+    getFolders(dirPath: string) {
+        return readdirSync(dirPath)
+            .filter(function (file) {
+                return statSync(path.join(dirPath, file)).isDirectory();
+            }).map((folder: any) => `${path}/${folder.name}`);
+    }
+    getConflictsForDirectory(projectRoot: string): string[] {
+        return []
+        // return readdirSync(projectRoot).filter(
+        //     true
+        //     // (file: string) => !(/\.iml$/.test(file) || tolerableFiles.includes(file))
+        // );
+    }
+    public static getDirectories(dirPath: string): string[] {
+        return readdirSync(dirPath)
+            .map((name: string): string => path.join(dirPath, name))
+        // .filter(this.isDirectory);
+    }
+    //  getFiles(srcpath: string): string[] {
+    // return fs .readdirSync(srcpath).filter((file) => fs.statSync(path.join(srcpath, file)).isFile());
+    // }
+}

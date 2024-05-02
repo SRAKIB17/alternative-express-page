@@ -1,4 +1,5 @@
 import fs from "fs";
+
 export function getFileContentType(fileName: string): { contentType: string; mimeType: string, type: string } {
     const fileExtension = fileName.split('.').pop()?.toLowerCase();
 

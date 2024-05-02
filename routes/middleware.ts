@@ -1,7 +1,7 @@
 import { Request, Response } from "../src"
 
 export const GET = async (req: Request, res: Response) => {
-    return await res.json({ suc: 345 })
+    res.json({ suc: 345 })
 }
 
 export const POST = (req: Request, res: Response) => {

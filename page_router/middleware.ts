@@ -1,5 +1,13 @@
 import { Request, file } from "../src";
+
 export class middleware {
+    #root: string;
+    #file_type: string;
+    constructor(root: string, type: string) {
+        this.#root = root;
+        this.#file_type = type;
+        // console.log(this.findMiddlewareFiles('sfsdf'))
+    }
     protected parseFormData(req: Request, callback: () => void) {
         let body = '';
         const contentType: any = req.headers['content-type'];
@@ -85,4 +93,18 @@ export class middleware {
             callback();
         });
     }
+
+    // Function to recursively find middleware files
+
+
+    // // Directory to start the search from
+    // const startDir = '/path/to/your/directory';
+
+    // // Find all middleware files
+    // const middlewareFiles = findMiddlewareFiles(startDir);
+
+    // // Print the list of middleware files
+    // console.log('Middleware files:');
+    // middlewareFiles.forEach(file => console.log(file));
+
 }
