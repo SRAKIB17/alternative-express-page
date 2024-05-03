@@ -1,9 +1,10 @@
 import fs from "fs";
 import path from "path";
-import { Request, Response, Url, deleteCookie, getParams, parseCookies, setCookie } from "page-router/src";
-import { getFileContentType, isModuleFile, moduleType } from "page-router/page-router/filetype";
-import { middleware } from "page-router/page-router/middleware";
-import { err } from "page-router/page-router/errors";
+import { Request, Response, Url, deleteCookie, getParams, parseCookies, setCookie } from "../src";
+import { getFileContentType, isModuleFile, moduleType } from "./filetype";
+import { middleware } from "./middleware";
+import { err } from "./errors";
+import { findMiddlewareFiles } from "./files";
 
 export class ResponseHandler extends middleware {
     #root: string;
@@ -56,6 +57,11 @@ export class ResponseHandler extends middleware {
 
     async #responseHandler(req: Request, res: Response, args: ((req: Request, res: Response) => void)[] | ((req: Request, res: Response) => void), option?: any) {
         let statusCode = 0;
+        console.log(findMiddlewareFiles('./routes'))
+
+        const used = process.memoryUsage().heapUsed / 1024 / 1024;
+        console.log(`The script uses approximately ${Math.round(used * 100) / 100} MB`);
+
         const url = new Url(req.url || "").urlParse;
         const params = getParams("pathname", "r?.path");
         req.params = params;
@@ -224,6 +230,7 @@ export class ResponseHandler extends middleware {
         });
     }
     async #moduleHandler(pathname: string, req: Request, res: Response): Promise<void> {
+
         return new Promise<void>((resolve, reject) => {
             fs.stat(pathname, (err) => {
                 if (err) {

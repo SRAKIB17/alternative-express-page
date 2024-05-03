@@ -5,11 +5,11 @@ export const GET = async (req: Request, res: Response) => {
 }
 
 export const POST = (req: Request, res: Response) => {
-    // console.log(req.body)
+    console.log(req.body)
     res.json({})
 }
 
 export function middleware(req: Request, res: Response) {
     // console.log(req.body)
-    return res.json({})
+    return res.next()
 }
