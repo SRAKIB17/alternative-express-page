@@ -3,7 +3,7 @@
 // const { handleRequest } = require('./server');
 // Get the command-line arguments
 const args = process.argv.slice(2);
-console.log(process.argv)
+
 // Check the first argument (the command)
 const command = args[0];
 

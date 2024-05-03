@@ -13,6 +13,12 @@ interface Handlers {
     middleware?: (req: Request, res: Response, next: () => void) => void;
 }
 
+const rootPath = path.dirname(require?.main?.filename || "");
+console.log(process.env.APP_ROOT_PATH)
+
+console.log((require.main?.path || ""))
+console.log(process.cwd(), 'sdff')
+
 
 // Create a server
 export class CreateServer extends ResponseHandler {
