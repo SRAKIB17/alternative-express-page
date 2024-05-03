@@ -1,4 +1,4 @@
-import { CreateServer } from "./page-router/createServer";
+import { Server } from "./page-router";
 
-const server = new CreateServer();
+const server = new Server();
 server.listen(3000)

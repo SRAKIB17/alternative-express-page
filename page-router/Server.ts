@@ -1,17 +1,10 @@
 import http, { createServer } from "http";
 import https, { createServer as createSecureServer } from "https";
 import path from "path";
-import { Request, Response, ServerOptionsProps, Url } from "../src";
 import { ResponseHandler } from "./response";
+import { Request, Response, ServerOptionsProps } from "./types";
+import { Url } from "./utils";
 
-interface Handlers {
-    GET?: (req: Request, res: Response) => void;
-    POST?: (req: Request, res: Response) => void;
-    PUT?: (req: Request, res: Response) => void;
-    DELETE?: (req: Request, res: Response) => void;
-    PATCH?: (req: Request, res: Response) => void;
-    middleware?: (req: Request, res: Response, next: () => void) => void;
-}
 
 const rootPath = path.dirname(require?.main?.filename || "");
 console.log(process.env.APP_ROOT_PATH)
@@ -21,7 +14,7 @@ console.log(process.cwd(), 'sdff')
 
 
 // Create a server
-export class CreateServer extends ResponseHandler {
+export class Server extends ResponseHandler {
     server: https.Server | http.Server;
     #option: ServerOptionsProps;
     #root: string;

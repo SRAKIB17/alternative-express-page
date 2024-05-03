@@ -1,6 +1,6 @@
 import { accessSync, constants, readFileSync, readdirSync, statSync } from "fs";
 import path from "path";
-import { Request, Response } from "../src";
+import { Request, Response } from "./types";
 
 
 export function getFiles(dirPath: string) {

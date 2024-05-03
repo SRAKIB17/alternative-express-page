@@ -1,12 +1,11 @@
 import fs from "fs";
 import path from "path";
-import { Request, Response, Url, deleteCookie, getParams, parseCookies, setCookie } from "../src";
-import { getFileContentType, isModuleFile, moduleType } from "./filetype";
-import { middleware } from "./middleware";
-import { err } from "./errors";
 import { findMiddlewareFiles } from "./files";
+import { ParseFormData } from "./parse_form_data";
+import { Request, Response, } from "./types";
+import { Url, deleteCookie, err, getFileContentType, getParams, isModuleFile, moduleType, parseCookies, setCookie } from "./utils";
 
-export class ResponseHandler extends middleware {
+export class ResponseHandler extends ParseFormData {
     #root: string;
     #file_type: string;
     constructor(root: string, type: string) {
@@ -315,7 +314,6 @@ export class ResponseHandler extends middleware {
             return await { success: true }
         }
         catch (error: any) {
-            // console.log(error)
             const get: { status: number, description: string } = err[error?.code];
             return await { success: false, err: error, status: get?.status }
         }

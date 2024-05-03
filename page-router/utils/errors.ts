@@ -29,15 +29,3 @@ export const err: any = {
         "description": "Unknown resource"
     }
 }
-
-export async function _retry(callback: () => void) {
-    try {
-        await callback();
-        return await { success: true }
-    }
-    catch (error: any) {
-        // console.log(error)
-        const get: { status: number, description: string } = err[error?.code];
-        return await { success: false, err: error, status: get?.status }
-    }
-}

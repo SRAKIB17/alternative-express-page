@@ -1,4 +1,4 @@
-import { CookieOptions, ParsedCookie, Response } from ".";
+import { CookieOptions, ParsedCookie, Response } from "../../src";
 
 export function parseCookies(cookieHeader: string): ParsedCookie {
     const cookies: ParsedCookie = {};
