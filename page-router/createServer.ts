@@ -2,7 +2,7 @@ import http, { createServer } from "http";
 import https, { createServer as createSecureServer } from "https";
 import path from "path";
 import { Request, Response, ServerOptionsProps, Url } from "page-router/src";
-import { ResponseHandler } from "page-router/router/response";
+import { ResponseHandler } from "page-router/page-router/response";
 
 interface Handlers {
     GET?: (req: Request, res: Response) => void;
@@ -72,5 +72,4 @@ export class CreateServer extends ResponseHandler {
         });
     }
 }
-
 
