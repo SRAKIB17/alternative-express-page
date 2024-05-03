@@ -14,7 +14,7 @@
     "type": "git",
     "url": "git+https://github.com/srakib17"
   },
-  "bin": "./page_router/bin/cli.js",
+  "bin": "bin/cli.js",
   "keywords": [],
   "author": "",
   "license": "ISC",

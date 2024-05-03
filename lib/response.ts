@@ -1,9 +1,9 @@
 import fs from "fs";
 import path from "path";
-import { Request, Response, Url, deleteCookie, getParams, parseCookies, setCookie } from "../src";
-import { getFileContentType, isModuleFile, moduleType } from "./filetype";
-import { middleware } from "./middleware";
-import { err } from "./errors";
+import { Request, Response, Url, deleteCookie, getParams, parseCookies, setCookie } from "page-router/src";
+import { getFileContentType, isModuleFile, moduleType } from "page-router/lib/filetype";
+import { middleware } from "page-router/lib/middleware";
+import { err } from "page-router/lib/errors";
 
 export class ResponseHandler extends middleware {
     #root: string;

@@ -1,4 +1,4 @@
-import { Request, file } from "../src";
+import { Request, file } from "page-router/src";
 
 export async function parseFormData(req: Request, callback: () => void) {
     let body = '';

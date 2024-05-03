@@ -1,4 +1,4 @@
-import { CreateServer } from "./page_router";
+import { CreateServer } from "page-router";
 
 // Start the server
 const server = new CreateServer();

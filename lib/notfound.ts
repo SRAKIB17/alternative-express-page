@@ -1,5 +1,5 @@
 import path from "path";
-import { Url } from "../src";
+import { Url } from "page-router/src";
 
 export async function notFoundHandler(req: Request, res: Response, status: number = 404): Promise<void> {
     try {

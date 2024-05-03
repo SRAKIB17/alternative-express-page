@@ -1,4 +1,4 @@
-import { Request, file } from "../src";
+import { Request, file } from "page-router/src";
 
 export class middleware {
     #root: string;
