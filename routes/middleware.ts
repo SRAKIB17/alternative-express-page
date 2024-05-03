@@ -1,15 +1,6 @@
-import { Request, Response } from "../src"
+import { Request, Response } from "../page-router";
 
-export const GET = async (req: Request, res: Response) => {
-    res.json({ suc: 345 })
-}
-
-export const POST = (req: Request, res: Response) => {
+export default function middleware(req: Request, res: Response) {
     // console.log(req.body)
-    res.json({})
-}
-
-export function middleware(req: Request, res: Response) {
-    // console.log(req.body)
-    return res.json({})
+    return res.next()
 }
