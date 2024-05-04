@@ -10,6 +10,6 @@ export const POST = (req: Request, res: Response) => {
 }
 
 export function middleware(req: Request, res: Response) {
-    // console.log(req.body)
+    console.log("INDEX middleware")
     return res.next()
 }

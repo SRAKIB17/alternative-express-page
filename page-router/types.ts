@@ -1,6 +1,7 @@
 import { IncomingMessage, OutgoingHttpHeader, ServerResponse } from "http";
 import { OutgoingHttpHeaders } from "http2";
 import { ServerOptions } from "https";
+import { ServerErrorType } from "./utils";
 
 export interface ParsedCookie {
     [key: string]: string;
@@ -76,6 +77,7 @@ export type file = {
     buffer: Buffer;
 }
 export interface Request extends IncomingMessage {
+    error: ServerErrorType,
     params: {
         [key: string]: string
     },

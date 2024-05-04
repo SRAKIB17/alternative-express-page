@@ -1,7 +1,7 @@
-import { accessSync, constants, readFileSync, readdirSync, statSync } from "fs";
+import { Dirent, accessSync, constants, promises as fsPromises, readFileSync, readdirSync, statSync } from "fs";
 import path from "path";
 import { Request, Response } from "./types";
-
+import { readdir, stat } from 'fs';
 
 export function getFiles(dirPath: string) {
     const filesInFolder = readdirSync(dirPath, { withFileTypes: true });
@@ -52,12 +52,12 @@ export async function getLocalFileContents(filepath: string) {
     })
 }
 
-export function readdir(dirPath?: string): readonly string[] {
-    return []
-    // return readdirSync(this.getPath(dirPath))
-    //     .sort()
-    //     .filter(name => name !== ".DS_Store");
-}
+// export function readdir(dirPath?: string, p0?: { withFileTypes: boolean; }, p1?: (err: NodeJS.ErrnoException | null, files: Dirent[]) => void): readonly string[] {
+//     return []
+//     // return readdirSync(this.getPath(dirPath))
+//     //     .sort()
+//     //     .filter(name => name !== ".DS_Store");
+// }
 //      getFiles(srcpath: string): string[] {
 //     // return fs
 //     //     .readdirSync(srcpath)
@@ -71,7 +71,7 @@ export function assertEmptyDir(path: string): void {
 export function prepare(dirPath: string) {
     for (const file of readdirSync(dirPath).filter(f => f.endsWith('.js') && f !== 'index.js')) {
         // api.suite(file, () => require(`./${file}`).default(api));
-        console.log(file)
+        // console.log(file)
     }
 }
 export function* walkSync(dir: string): Generator<string> {
@@ -134,7 +134,8 @@ export function findMiddlewareFiles(dir: string): string[] {
     let middlewareFiles: string[] = [];
     // Get all files and directories in the current directory
     const items = readdirSync(dir);
-    console.log(items)
+
+    // console.log(items)
     // Iterate over each item
     items.forEach(item => {
         // Get the full path of the item
@@ -154,3 +155,92 @@ export function findMiddlewareFiles(dir: string): string[] {
     });
     return middlewareFiles;
 }
+
+
+
+
+
+// export function readDirectoryRecursive(directoryPath: string, callback: (filesArray: string[], directoriesArray: string[]) => void): void {
+//     readdir(directoryPath, { withFileTypes: true }, (err: NodeJS.ErrnoException | null, files: Dirent[]) => {
+//         if (err) {
+//             console.error('Error reading directory:', err);
+//             return callback([], []);
+//         }
+
+//         const filesArray: string[] = [];
+//         const directoriesArray: string[] = [];
+//         let pending = files.length;
+
+//         if (pending === 0) {
+//             callback(filesArray, directoriesArray);
+//         }
+
+//         files.forEach((file) => {
+//             const filePath = path.join(directoryPath, file.name);
+//             stat(filePath, (err: NodeJS.ErrnoException | null, stats) => {
+//                 if (err) {
+//                     console.error('Error statting file:', err);
+//                     pending--;
+//                     if (pending === 0) {
+//                         callback(filesArray, directoriesArray);
+//                     }
+//                     return;
+//                 }
+
+//                 if (stats.isDirectory()) {
+//                     directoriesArray.push(filePath);
+//                     readDirectoryRecursive(filePath, (innerFilesArray, innerDirectoriesArray) => {
+//                         filesArray.push(...innerFilesArray);
+//                         directoriesArray.push(...innerDirectoriesArray);
+//                         pending--;
+//                         if (pending === 0) {
+//                             callback(filesArray, directoriesArray);
+//                         }
+//                     });
+//                 }
+//                 else {
+//                     filesArray.push(filePath);
+//                     pending--;
+//                     if (pending === 0) {
+//                         callback(filesArray, directoriesArray);
+//                     }
+//                 }
+//             });
+//         });
+//     });
+// }
+
+// Example usage:
+// const directoryPath = '/path/to/your/directory';
+// readDirectoryRecursive(directoryPath, (filesArray, directoriesArray) => {
+//     console.log('Files Array:', filesArray);
+//     console.log('Directories Array:', directoriesArray);
+// });
+
+
+export async function readDirectoryRecursive(directoryPath: string, filesArray: string[] = [], directoriesArray: string[] = []): Promise<void> {
+    try {
+        const files: Dirent[] = await fsPromises.readdir(directoryPath, { withFileTypes: true });
+        for (const file of files) {
+            const filePath = path.join(directoryPath, file.name);
+            const stats = await fsPromises.stat(filePath);
+            if (stats.isDirectory()) {
+                directoriesArray.push(filePath);
+                await readDirectoryRecursive(filePath, filesArray, directoriesArray);
+            }
+            else {
+                filesArray.push(filePath);
+            }
+        }
+    } catch (err: any) {
+        return err.message
+        // console.log(new Error(`'Error reading directory:', ${err?.message}`))
+    }
+}
+
+// Example usage:
+// const directoryPath = './routers';
+// readDirectoryRecursive(directoryPath, (filesArray, directoriesArray) => {
+//     console.log('Files Array:', filesArray);
+//     console.log('Directories Array:', directoriesArray);
+// });

@@ -1,4 +1,4 @@
-import { Request, Response } from "../../src"
+import { Request, Response } from "../../page-router"
 
 export const GET = async (req: Request, res: Response) => {
     res.json({ suc: 345 })

@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from "path";
 
 export function getFileContentType(fileName: string): { contentType: string; mimeType: string, type: string } {
     const fileExtension = fileName.split('.').pop()?.toLowerCase();
@@ -25,7 +26,7 @@ export function getFileContentType(fileName: string): { contentType: string; mim
 }
 export const moduleType = ['js', 'ts'];
 export function isModuleFile(filePath: string): boolean {
-    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const fileContent = fs.readFileSync(path.resolve(filePath), 'utf8');
     const fileExtension = getFileContentType(filePath);
     // Check if file contains module-related syntax
     const isModuleSyntaxPresent = /(import|export|export\s*\{)/.test(fileContent);
